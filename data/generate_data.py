@@ -92,7 +92,9 @@ competitor_prices = pd.DataFrame({
 
 # Ensure competitor prices are within +-40% of product prices
 product_prices = {p['ProductId']: p['Price'] for p in products_data}
-competitor_prices['Price'] = [round(np.random.uniform(0.8 * product_prices[pid], 1.4 * product_prices[pid])) for pid in competitor_prices['ProductId']]
+competitor_prices['Price'] = [max(round(np.random.uniform(350, 500)), round(np.random.uniform(0.8 * product_prices[pid], 1.4 * product_prices[pid]))) for pid in competitor_prices['ProductId']]
+
+print(competitor_prices.head())
 
 # Generate Market Data
 # Calculate total searches, addtocart, and purchases for each product
@@ -113,10 +115,10 @@ for i, row in market_data.iterrows():
     addtocart = product_actions_count.loc[product_id]['addtocart']
     purchases = product_actions_count.loc[product_id]['purchase']
     
-    # Calculate AverageSellingPrice based on searches, addtocart, and purchases
+    product_price = product_prices[product_id]  # Get the product price
     total_actions = searches + addtocart + purchases
     if total_actions > 0:
-        average_selling_price = (10 * searches + 30 * addtocart + 50 * purchases) / total_actions
+        average_selling_price = np.random.randint(min(product_price, 500), max(product_price, 500))
         market_data.at[i, 'AverageSellingPrice'] = round(average_selling_price)
     
     # Calculate Trends based on TotalSales percentiles
