@@ -92,7 +92,7 @@ competitor_prices = pd.DataFrame({
 
 # Ensure competitor prices are within +-40% of product prices
 product_prices = {p['ProductId']: p['Price'] for p in products_data}
-competitor_prices['Price'] = [round(np.random.uniform(0.6 * product_prices[pid], 1.4 * product_prices[pid])) for pid in competitor_prices['ProductId']]
+competitor_prices['Price'] = [round(np.random.uniform(0.8 * product_prices[pid], 1.4 * product_prices[pid])) for pid in competitor_prices['ProductId']]
 
 # Generate Market Data
 # Calculate total searches, addtocart, and purchases for each product
