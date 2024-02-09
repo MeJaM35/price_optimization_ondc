@@ -95,12 +95,42 @@ product_prices = {p['ProductId']: p['Price'] for p in products_data}
 competitor_prices['Price'] = [round(np.random.uniform(0.6 * product_prices[pid], 1.4 * product_prices[pid])) for pid in competitor_prices['ProductId']]
 
 # Generate Market Data
+# Calculate total searches, addtocart, and purchases for each product
+product_actions_count = transactions.groupby('ProductId')['Action'].value_counts().unstack(fill_value=0)
+
+# Assuming num_market_data_entries and other relevant dataframes are defined
 market_data = pd.DataFrame({
     'ProductId': np.random.choice([p['ProductId'] for p in products_data], num_market_data_entries),
     'TotalSales': np.random.randint(1, 100, num_market_data_entries),
-    'Trends': np.random.choice(['up', 'down', 'stable'], num_market_data_entries),
-    'AverageSellingPrice': np.random.uniform(10, 50, num_market_data_entries)
+    'Trends': np.zeros(num_market_data_entries),
+    'AverageSellingPrice': np.zeros(num_market_data_entries)
 })
+
+# Calculate AverageSellingPrice and Trends based on transactions
+for i, row in market_data.iterrows():
+    product_id = row['ProductId']
+    searches = product_actions_count.loc[product_id]['search']
+    addtocart = product_actions_count.loc[product_id]['addtocart']
+    purchases = product_actions_count.loc[product_id]['purchase']
+    
+    # Calculate AverageSellingPrice based on searches, addtocart, and purchases
+    total_actions = searches + addtocart + purchases
+    if total_actions > 0:
+        average_selling_price = (10 * searches + 30 * addtocart + 50 * purchases) / total_actions
+        market_data.at[i, 'AverageSellingPrice'] = round(average_selling_price)
+    
+    # Calculate Trends based on TotalSales percentiles
+    total_sales_percentile = np.percentile(market_data['TotalSales'], [40, 70])
+    if row['TotalSales'] <= total_sales_percentile[0]:
+        market_data.at[i, 'Trends'] = 'down'
+    elif row['TotalSales'] <= total_sales_percentile[1]:
+        market_data.at[i, 'Trends'] = 'stable'
+    else:
+        market_data.at[i, 'Trends'] = 'up'
+
+# Print a sample of the market_data DataFrame
+print(market_data.head())
+
 
 # Save DataFrames to CSV
 products = pd.DataFrame(products_data)
